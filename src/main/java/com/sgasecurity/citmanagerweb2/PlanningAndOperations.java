@@ -11,8 +11,6 @@ public class PlanningAndOperations {
     @Column(name="id")
     @GeneratedValue
     private Integer id;
-
-
     private String timestamp;
     private String update_timestamp;
     private String reference_number;
@@ -47,7 +45,12 @@ public class PlanningAndOperations {
     private String number_of_police_officers;
     private String is_cross_border;
     private String police_officers_confirmation;
-    private String vehicles_confirmation;
+
+    private String lead_car_confirmation;
+    private String chase_car_confirmation;
+
+    private String lead_driver_confirmation;
+    private String chase_driver_confirmation;
     private String support_staff_confirmation;
     private String boxbag_confirmation;
     private String seals_confirmation;
@@ -62,7 +65,8 @@ public class PlanningAndOperations {
     {
 
     }
-    public PlanningAndOperations(String timestamp, String update_timestamp, String reference_number, String request_type, String customer_request_ids, String itinerary_coordinates, String crew_commander_id, String crew_commander_name, String support_staff_ids, String support_staff_names, String vehicle_preallocated_status, String lead_car_id, String lead_car_regno, String chase_car_id, String chase_car_regno, String lead_car_driver_id, String lead_car_driver_name, String chase_car_driver_id, String chase_car_driver_name, String bags_boxes_serials, String seals_serials, String plan_operation_stage, String plan_operation_status, String plan_created_by_id, String plan_approved_by_id, String plan_created_by_name, String plan_approved_by_name, String police_post_name, String police_post_number, String police_officer_names, String police_officers_numbers, String number_of_police_officers, String is_cross_border, String police_officers_confirmation, String vehicles_confirmation, String support_staff_confirmation, String boxbag_confirmation, String seals_confirmation, String events_reviewed, String documents_reviewed, String decrew_requested, String decrew_otp_confirmed, String decrew_otp_id, String audit_trail_user_id) {
+
+    public PlanningAndOperations(String timestamp, String update_timestamp, String reference_number, String request_type, String customer_request_ids, String itinerary_coordinates, String crew_commander_id, String crew_commander_name, String support_staff_ids, String support_staff_names, String vehicle_preallocated_status, String lead_car_id, String lead_car_regno, String chase_car_id, String chase_car_regno, String lead_car_driver_id, String lead_car_driver_name, String chase_car_driver_id, String chase_car_driver_name, String bags_boxes_serials, String seals_serials, String plan_operation_stage, String plan_operation_status, String plan_created_by_id, String plan_approved_by_id, String plan_created_by_name, String plan_approved_by_name, String police_post_name, String police_post_number, String police_officer_names, String police_officers_numbers, String number_of_police_officers, String is_cross_border, String police_officers_confirmation, String lead_car_confirmation, String chase_car_confirmation, String lead_driver_confirmation, String chase_driver_confirmation, String support_staff_confirmation, String boxbag_confirmation, String seals_confirmation, String events_reviewed, String documents_reviewed, String decrew_requested, String decrew_otp_confirmed, String decrew_otp_id, String audit_trail_user_id) {
         this.timestamp = timestamp;
         this.update_timestamp = update_timestamp;
         this.reference_number = reference_number;
@@ -97,7 +101,10 @@ public class PlanningAndOperations {
         this.number_of_police_officers = number_of_police_officers;
         this.is_cross_border = is_cross_border;
         this.police_officers_confirmation = police_officers_confirmation;
-        this.vehicles_confirmation = vehicles_confirmation;
+        this.lead_car_confirmation = lead_car_confirmation;
+        this.chase_car_confirmation = chase_car_confirmation;
+        this.lead_driver_confirmation = lead_driver_confirmation;
+        this.chase_driver_confirmation = chase_driver_confirmation;
         this.support_staff_confirmation = support_staff_confirmation;
         this.boxbag_confirmation = boxbag_confirmation;
         this.seals_confirmation = seals_confirmation;
@@ -108,6 +115,8 @@ public class PlanningAndOperations {
         this.decrew_otp_id = decrew_otp_id;
         this.audit_trail_user_id = audit_trail_user_id;
     }
+
+
 
 
     public Integer getId() {
@@ -390,14 +399,6 @@ public class PlanningAndOperations {
         this.police_officers_confirmation = police_officers_confirmation;
     }
 
-    public String getVehicles_confirmation() {
-        return vehicles_confirmation;
-    }
-
-    public void setVehicles_confirmation(String vehicles_confirmation) {
-        this.vehicles_confirmation = vehicles_confirmation;
-    }
-
     public String getSupport_staff_confirmation() {
         return support_staff_confirmation;
     }
@@ -471,6 +472,37 @@ public class PlanningAndOperations {
     }
 
 
+    public String getLead_car_confirmation() {
+        return lead_car_confirmation;
+    }
+
+    public void setLead_car_confirmation(String lead_car_confirmation) {
+        this.lead_car_confirmation = lead_car_confirmation;
+    }
+
+    public String getChase_car_confirmation() {
+        return chase_car_confirmation;
+    }
+
+    public void setChase_car_confirmation(String chase_car_confirmation) {
+        this.chase_car_confirmation = chase_car_confirmation;
+    }
+
+    public String getLead_driver_confirmation() {
+        return lead_driver_confirmation;
+    }
+
+    public void setLead_driver_confirmation(String lead_driver_confirmation) {
+        this.lead_driver_confirmation = lead_driver_confirmation;
+    }
+
+    public String getChase_driver_confirmation() {
+        return chase_driver_confirmation;
+    }
+
+    public void setChase_driver_confirmation(String chase_driver_confirmation) {
+        this.chase_driver_confirmation = chase_driver_confirmation;
+    }
 
 
 }
