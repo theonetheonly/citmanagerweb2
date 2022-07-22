@@ -50,7 +50,6 @@ public class EntryPoint {
             System.out.println("Password: "+ password+"\n");
             System.out.println("RFID/NFC tag: "+rfid_nfc_tag+"\n");
 
-
 /*            JSONObject JOBJECT = new JSONObject(payload);
 
             Iterator keys = JOBJECT.keys();

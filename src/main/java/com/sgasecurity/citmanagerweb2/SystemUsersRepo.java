@@ -13,5 +13,9 @@ public interface SystemUsersRepo extends JpaRepository<SystemUsers,Integer> {
     @Query(value = "SELECT * FROM system_users WHERE rfid_nfc_tag=?1 AND status='ENABLED' ORDER BY id DESC LIMIT 1", nativeQuery = true)
     public List<SystemUsers> loginWithNFCCard(String nfc);
 
+    @Query(value = "SELECT * FROM system_users WHERE id=?1 ", nativeQuery = true)
+    public SystemUsers getSingleSystemUser(String id);
+
+
 
 }

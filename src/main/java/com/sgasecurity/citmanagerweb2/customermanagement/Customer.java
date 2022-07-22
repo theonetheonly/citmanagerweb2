@@ -11,6 +11,7 @@ public class Customer {
     @javax.persistence.Id
     @Column(name="id")
     @GeneratedValue
+
     private Integer id;
     private Timestamp timestamp;
     private Timestamp updateTimestamp;

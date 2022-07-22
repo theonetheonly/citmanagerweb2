@@ -22,4 +22,17 @@ public interface PlanningAndOperationsRepo extends JpaRepository<PlanningAndOper
     @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 ", nativeQuery = true)
     public List<PlanningAndOperations> getSingleOperationByID(String operation_id);
 
+
+    @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 ", nativeQuery = true)
+    public PlanningAndOperations getSingleOperationByIDSingleObject(String operation_id);
+
+
+
+    @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 AND seals_serials IN(?2) ", nativeQuery = true)
+    public List<PlanningAndOperations> checkPlanScannedSeals(String operation_id, String seals);
+
+
+    @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 AND seals_serials LIKE ?2 ", nativeQuery = true)
+    public List<PlanningAndOperations> checkPlanScannedSealsEach(String operation_id, String seals);
+
 }

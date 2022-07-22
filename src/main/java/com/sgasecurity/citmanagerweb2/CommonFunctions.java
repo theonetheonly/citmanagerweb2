@@ -93,4 +93,29 @@ public class CommonFunctions {
 }
 
 
+    public int countCharachters(String str)
+    {
+    char[] strArr;
+    int finalcount =0;
+    while(str.length() != 0) {
+        strArr = str.toCharArray();
+        char ch = strArr[0];
+        int count = 1;
+        for (int i = 1; i < strArr.length; i++) {
+            if (ch == strArr[i]) {
+                count++;
+            }
+        }
+        // We don't need to count spaces
+        if (((ch != ' ') && (ch != '\t'))) {
+            System.out.println(ch + " - " + count);
+        }
+        finalcount = count;
+        // replace all occurrence of the character
+        // which is already iterated and counted
+        str = str.replace("" + ch, "");
+            }
+        return  finalcount;
+    }
+
 }

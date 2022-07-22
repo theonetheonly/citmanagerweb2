@@ -12,6 +12,7 @@ public class PlanningTripEntries {
     @GeneratedValue
     private Integer id;
 
+
     private String timestamp;
     private String update_timestamp;
     private String planning_id;
