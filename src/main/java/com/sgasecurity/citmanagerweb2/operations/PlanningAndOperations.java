@@ -1,4 +1,4 @@
-package com.sgasecurity.citmanagerweb2;
+package com.sgasecurity.citmanagerweb2.operations;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

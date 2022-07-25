@@ -3,18 +3,13 @@ package com.sgasecurity.citmanagerweb2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import netscape.javascript.JSException;
-import netscape.javascript.JSObject;
+import com.sgasecurity.citmanagerweb2.operations.PlanningAndOperationsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 
 @Controller

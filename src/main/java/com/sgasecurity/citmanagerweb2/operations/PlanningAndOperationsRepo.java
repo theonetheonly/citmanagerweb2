@@ -1,5 +1,6 @@
-package com.sgasecurity.citmanagerweb2;
+package com.sgasecurity.citmanagerweb2.operations;
 
+import com.sgasecurity.citmanagerweb2.operations.PlanningAndOperations;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,6 +22,9 @@ public interface PlanningAndOperationsRepo extends JpaRepository<PlanningAndOper
 
     @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 ", nativeQuery = true)
     public List<PlanningAndOperations> getSingleOperationByID(String operation_id);
+
+    @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 ", nativeQuery = true)
+    public PlanningAndOperations getSingleOperationByIDObj(String operation_id);
 
 
     @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 ", nativeQuery = true)

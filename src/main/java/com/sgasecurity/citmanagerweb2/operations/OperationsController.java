@@ -7,7 +7,6 @@ import com.sgasecurity.citmanagerweb2.customermanagement.*;
 import com.sgasecurity.citmanagerweb2.resources.LocationTags;
 import com.sgasecurity.citmanagerweb2.resources.LocationTagsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +52,8 @@ public class OperationsController {
     SystemUsersRepo systemUsersRepo;
     CommonFunctions commonFunctions = new CommonFunctions();
     Communication communication = new Communication();
+
+    FileManager fileManager = new FileManager();
 
 
     @ResponseBody
@@ -147,7 +148,8 @@ public class OperationsController {
 
         try {
 
-            System.out.println("Confirm resourses test::\n OK");
+            System.out.println("Confirm resources test::\n OK");
+
             List<PlanningAndOperations> PlanningAndOperationsList = planningAndOperationsRepo.getSingleOperationByID(id);
             PlanningAndOperations PO = PlanningAndOperationsList.get(0);
 
@@ -758,9 +760,124 @@ public class OperationsController {
             return jsonStr;
 
         } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt",true, ex.toString() + " at reviewPrintConsignmentDocument");
             return "{\"error\":\"" + ex.toString() + "  at reviewPrintConsignmentDocument \"}";
         }
     }
+
+
+    @ResponseBody
+    @RequestMapping("/reviewjourneyevents")
+    public String reviewJourneyEvents(@RequestParam("plan_id") String plan_id,
+                                      @RequestParam("user_id") String user_id)
+    {
+        try{
+            // 1. Get all customer requests in the journey
+                List<PlanningTripEntries> Pentries=  planningTripEntriesRepo.getPlanningTripByEntrriesByPlanningIDASC(plan_id);
+                System.out.println("Planning trip entries found: "+Pentries.size());
+                List<HashMap<String, String>> myoutput = new ArrayList<>();
+
+                int event_no = 1;
+                for(PlanningTripEntries pe: Pentries)
+                    {
+                        HashMap<String, String> output = new HashMap<>();
+                        output.put("EVENT NO.", Integer.toString(event_no));
+                        output.put("CUSTOMER",pe.getCustomer_name());
+                        output.put("EVENT",pe.getAction());
+                        output.put("STATUS",pe.getStatus());
+                        myoutput.add(output);
+                    }
+
+
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            String jsonStr = mapper.writeValueAsString(myoutput);
+            return jsonStr;
+        }
+        catch (Exception ex)
+        {
+            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyEvents") ;
+            return "{\"error\":\"" + ex.toString() + "  at reviewJourneyEvents \"}";
+
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/reviewjourneydocuments")
+    public String reviewJourneyDocuments(@RequestParam("plan_id") String plan_id,
+                                      @RequestParam("user_id") String user_id)
+    {
+        try{
+            List<PlanningTripEntriesDocuments> PentriesDocs=  planningTropEntriesDocumentsRepo.getDocumentsByPlanID(plan_id);
+            System.out.println("Planning trip entries found: "+PentriesDocs.size());
+            List<HashMap<String, String>> myoutput = new ArrayList<>();
+
+            int event_no = 1;
+            for(PlanningTripEntriesDocuments pe: PentriesDocs)
+            {
+                HashMap<String, String> output = new HashMap<>();
+                output.put("DOCUMENT NO.", Integer.toString(event_no));
+                output.put("TITLE",pe.getDocument_title());
+                output.put("PATH",pe.getDocument_path());
+                String cust_name="--";
+
+                CustomerRequest CRt = customerRequestRepo.getSingleCustomerRequestByID(pe.getCustomer_request_id());
+
+                if (CRt != null)
+                {
+                    cust_name = CRt.getCustomerName();
+                }
+
+                output.put("CUSTOMER_NAME", cust_name);
+                myoutput.add(output);
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            String jsonStr = mapper.writeValueAsString(myoutput);
+            return jsonStr;
+        }
+        catch (Exception ex)
+        {
+            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyDocuments") ;
+            return "{\"error\":\"" + ex.toString() + "  at reviewJourneyDocuments \"}";
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/requestdecrew")
+    public String requestdecrew(@RequestParam("plan_id") String plan_id,
+                                         @RequestParam("user_id") String user_id)
+    {
+        try{
+
+                PlanningAndOperations PO = planningAndOperationsRepo.getSingleOperationByIDObj(plan_id);
+
+
+                if (PO != null)
+                {
+
+                    PO.setDecrew_requested("REQUESTED");
+
+
+                    return "{\"REQUEST_DECREW\":\"SUCCESS\"}";
+                }
+                else {
+                    PO.setDecrew_requested("REQUESTED");
+                    return "{\"REQUEST_DECREW\":\"ERROR: PLANNING RECORD NOT FOUND\"}";
+
+                }
+        }
+        catch (Exception ex)
+        {
+            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyDocuments") ;
+            return "{\"error\":\"" + ex.toString() + "  at reviewJourneyDocuments \"}";
+        }
+    }
+
+
 
 
 }
