@@ -701,14 +701,12 @@ public class OperationsController {
                     // Get the document and display
                     PlanningTripEntriesDocuments PTED2 = new PlanningTripEntriesDocuments(plan_id, customer_request_id, planning_trip_entry_id, "Consignment " + exchange_type, "", user_id, exchange_type, "");
                     planningTropEntriesDocumentsRepo.save(PTED2);
-                    document_number = plan_id + "-" + customer_request_id + "-" + planning_trip_entry_id +"-" + Integer.toString(PTED2.getId());
+                    document_number = plan_id + "-" + customer_request_id + "-" + planning_trip_entry_id + "-" + Integer.toString(PTED2.getId());
 
                     PTED2.setDocument_number(document_number);
 
                     planningTropEntriesDocumentsRepo.save(PTED2);
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     System.out.println("ERROR CREATE NEW RECORD: " + ex.toString());
                 }
             } else {
@@ -760,8 +758,36 @@ public class OperationsController {
             return jsonStr;
 
         } catch (Exception ex) {
-            fileManager.writeToFile("operations_errors.txt",true, ex.toString() + " at reviewPrintConsignmentDocument");
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewPrintConsignmentDocument");
             return "{\"error\":\"" + ex.toString() + "  at reviewPrintConsignmentDocument \"}";
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/updatetripentrystatus")
+    public String updateTripEntryStatus(@RequestParam("planning_trip_entry_id") Integer planning_trip_entry_id) {
+        try {
+
+            PlanningTripEntries planningTripEntries = planningTripEntriesRepo.findById(planning_trip_entry_id).orElse(null);
+
+            if (planningTripEntries != null) {
+                planningTripEntries.setStatus("COMPLETE");
+
+                planningTripEntriesRepo.save(planningTripEntries);
+
+                String output = String.format("%s at %s for customer %s has been successfully completed.", planningTripEntries.getAction(), planningTripEntries.getLocation_name(), planningTripEntries.getCustomer_name());
+
+                return "{\"success\":\"" + output + "\"}";
+
+            } else {
+
+                return "{\"error\":\"Trip entry not found\"}";
+            }
+
+
+        } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at updateTripEntryStatus");
+            return "{\"error\":\"" + ex.toString() + "  at updateTripEntryStatus \"}";
         }
     }
 
@@ -769,25 +795,22 @@ public class OperationsController {
     @ResponseBody
     @RequestMapping("/reviewjourneyevents")
     public String reviewJourneyEvents(@RequestParam("plan_id") String plan_id,
-                                      @RequestParam("user_id") String user_id)
-    {
-        try{
+                                      @RequestParam("user_id") String user_id) {
+        try {
             // 1. Get all customer requests in the journey
-                List<PlanningTripEntries> Pentries=  planningTripEntriesRepo.getPlanningTripByEntrriesByPlanningIDASC(plan_id);
-                System.out.println("Planning trip entries found: "+Pentries.size());
-                List<HashMap<String, String>> myoutput = new ArrayList<>();
+            List<PlanningTripEntries> Pentries = planningTripEntriesRepo.getPlanningTripByEntrriesByPlanningIDASC(plan_id);
+            System.out.println("Planning trip entries found: " + Pentries.size());
+            List<HashMap<String, String>> myoutput = new ArrayList<>();
 
-                int event_no = 1;
-                for(PlanningTripEntries pe: Pentries)
-                    {
-                        HashMap<String, String> output = new HashMap<>();
-                        output.put("EVENT NO.", Integer.toString(event_no));
-                        output.put("CUSTOMER",pe.getCustomer_name());
-                        output.put("EVENT",pe.getAction());
-                        output.put("STATUS",pe.getStatus());
-                        myoutput.add(output);
-                    }
-
+            int event_no = 1;
+            for (PlanningTripEntries pe : Pentries) {
+                HashMap<String, String> output = new HashMap<>();
+                output.put("EVENT NO.", Integer.toString(event_no));
+                output.put("CUSTOMER", pe.getCustomer_name());
+                output.put("EVENT", pe.getAction());
+                output.put("STATUS", pe.getStatus());
+                myoutput.add(output);
+            }
 
 
             ObjectMapper mapper = new ObjectMapper();
@@ -795,10 +818,8 @@ public class OperationsController {
 
             String jsonStr = mapper.writeValueAsString(myoutput);
             return jsonStr;
-        }
-        catch (Exception ex)
-        {
-            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyEvents") ;
+        } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewJourneyEvents");
             return "{\"error\":\"" + ex.toString() + "  at reviewJourneyEvents \"}";
 
         }
@@ -807,26 +828,23 @@ public class OperationsController {
     @ResponseBody
     @RequestMapping("/reviewjourneydocuments")
     public String reviewJourneyDocuments(@RequestParam("plan_id") String plan_id,
-                                      @RequestParam("user_id") String user_id)
-    {
-        try{
-            List<PlanningTripEntriesDocuments> PentriesDocs=  planningTropEntriesDocumentsRepo.getDocumentsByPlanID(plan_id);
-            System.out.println("Planning trip entries found: "+PentriesDocs.size());
+                                         @RequestParam("user_id") String user_id) {
+        try {
+            List<PlanningTripEntriesDocuments> PentriesDocs = planningTropEntriesDocumentsRepo.getDocumentsByPlanID(plan_id);
+            System.out.println("Planning trip entries found: " + PentriesDocs.size());
             List<HashMap<String, String>> myoutput = new ArrayList<>();
 
             int event_no = 1;
-            for(PlanningTripEntriesDocuments pe: PentriesDocs)
-            {
+            for (PlanningTripEntriesDocuments pe : PentriesDocs) {
                 HashMap<String, String> output = new HashMap<>();
                 output.put("DOCUMENT NO.", Integer.toString(event_no));
-                output.put("TITLE",pe.getDocument_title());
-                output.put("PATH",pe.getDocument_path());
-                String cust_name="--";
+                output.put("TITLE", pe.getDocument_title());
+                output.put("PATH", pe.getDocument_path());
+                String cust_name = "--";
 
                 CustomerRequest CRt = customerRequestRepo.getSingleCustomerRequestByID(pe.getCustomer_request_id());
 
-                if (CRt != null)
-                {
+                if (CRt != null) {
                     cust_name = CRt.getCustomerName();
                 }
 
@@ -838,10 +856,8 @@ public class OperationsController {
 
             String jsonStr = mapper.writeValueAsString(myoutput);
             return jsonStr;
-        }
-        catch (Exception ex)
-        {
-            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyDocuments") ;
+        } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewJourneyDocuments");
             return "{\"error\":\"" + ex.toString() + "  at reviewJourneyDocuments \"}";
         }
     }
@@ -849,30 +865,25 @@ public class OperationsController {
     @ResponseBody
     @RequestMapping("/requestdecrew")
     public String requestdecrew(@RequestParam("plan_id") String plan_id,
-                                         @RequestParam("user_id") String user_id)
-    {
-        try{
+                                @RequestParam("user_id") String user_id) {
+        try {
 
-                PlanningAndOperations PO = planningAndOperationsRepo.getSingleOperationByIDObj(plan_id);
-
-
-                if (PO != null)
-                {
-
-                    PO.setDecrew_requested("REQUESTED");
+            PlanningAndOperations PO = planningAndOperationsRepo.getSingleOperationByIDObj(plan_id);
 
 
-                    return "{\"REQUEST_DECREW\":\"SUCCESS\"}";
-                }
-                else {
-                    PO.setDecrew_requested("REQUESTED");
-                    return "{\"REQUEST_DECREW\":\"ERROR: PLANNING RECORD NOT FOUND\"}";
+            if (PO != null) {
 
-                }
-        }
-        catch (Exception ex)
-        {
-            fileManager.writeToFile("operations_errors.txt",true, ex.toString()+ " at reviewJourneyDocuments") ;
+                PO.setDecrew_requested("REQUESTED");
+
+
+                return "{\"REQUEST_DECREW\":\"SUCCESS\"}";
+            } else {
+                PO.setDecrew_requested("REQUESTED");
+                return "{\"REQUEST_DECREW\":\"ERROR: PLANNING RECORD NOT FOUND\"}";
+
+            }
+        } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewJourneyDocuments");
             return "{\"error\":\"" + ex.toString() + "  at reviewJourneyDocuments \"}";
         }
     }
