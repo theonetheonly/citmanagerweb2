@@ -73,4 +73,41 @@ public class IncidentsController {
             return "{\"error\":\"" + ex.toString() + "  at insertIncident \"}";
         }
     }
+
+    @ResponseBody
+    @RequestMapping("/updateincident")
+    public String updateIncident(@RequestParam("incident_id") int incident_id,
+                                 @RequestParam("reported_by_id") String reported_by_id,
+                                 @RequestParam("incident_time") String incident_time,
+                                 @RequestParam("incident_type") String incident_type,
+                                 @RequestParam("incident_description") String incident_description
+    ) {
+
+        try {
+
+            Incidents incident = incidentsRepository.findById(incident_id).orElse(null);
+
+            if (incident != null) {
+                incident.setIncident_time(incident_time);
+                incident.setType(incident_type);
+                incident.setDescription(incident_description);
+                incident.setAudit_trail_user_id(reported_by_id);
+
+                incidentsRepository.save(incident);
+
+                String output = "Incident updated successfully.";
+
+                return "{\"success\":\"" + output + "\"}";
+
+            } else {
+
+                return "{\"error\":\"Incident not found\"}";
+            }
+
+
+        } catch (Exception ex) {
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at updateIncident");
+            return "{\"error\":\"" + ex.toString() + "  at updateIncident \"}";
+        }
+    }
 }
