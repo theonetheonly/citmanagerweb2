@@ -39,4 +39,7 @@ public interface PlanningAndOperationsRepo extends JpaRepository<PlanningAndOper
     @Query(value = "SELECT * FROM planning_and_operations WHERE id=?1 AND seals_serials LIKE ?2 ", nativeQuery = true)
     public List<PlanningAndOperations> checkPlanScannedSealsEach(String operation_id, String seals);
 
+
+    @Query(value = "SELECT * FROM planning_and_operations WHERE crew_commander_id = ?1 AND (plan_operation_status = ?2 OR plan_operation_status = ?3) LIMIT 1", nativeQuery = true)
+    public List<PlanningAndOperations> getPlanVehicles(String crew_commander_id, String plan_operation_status, String plan_operation_status_2);
 }
