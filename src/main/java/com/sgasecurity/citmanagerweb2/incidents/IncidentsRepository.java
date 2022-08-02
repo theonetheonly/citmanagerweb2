@@ -1,6 +1,5 @@
 package com.sgasecurity.citmanagerweb2.incidents;
 
-import com.sgasecurity.citmanagerweb2.operations.PlanningAndOperations;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

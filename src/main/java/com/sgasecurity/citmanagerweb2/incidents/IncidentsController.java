@@ -3,7 +3,6 @@ package com.sgasecurity.citmanagerweb2.incidents;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sgasecurity.citmanagerweb2.FileManager;
-import com.sgasecurity.citmanagerweb2.operations.PlanningTripEntries;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +36,31 @@ public class IncidentsController {
         } catch (Exception ex) {
             System.out.println("Error\n" + ex.toString());
             return "{\"error\":\"" + ex.toString() + " at gettripentries";
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/getincidentsbyid")
+    public String getIncidentByID(@RequestParam("incident_id") int incident_id) {
+
+        try {
+            Incidents incident = incidentsRepository.findById(incident_id).orElse(null);
+
+            if (incident != null) {
+
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.enable(SerializationFeature.INDENT_OUTPUT);
+                return mapper.writeValueAsString(incident);
+
+            } else {
+
+                return "{\"error\":\"Incident not found\"}";
+            }
+
+
+        } catch (Exception ex) {
+            System.out.println("Error\n" + ex.toString());
+            return "{\"error\":\"" + ex.toString() + " at getincidentsbyid";
         }
     }
 

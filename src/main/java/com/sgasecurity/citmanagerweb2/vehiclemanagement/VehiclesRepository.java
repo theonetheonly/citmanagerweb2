@@ -9,5 +9,5 @@ import java.util.List;
 public interface VehiclesRepository extends JpaRepository<Vehicles, Integer> {
 
     @Query(value = "SELECT * FROM vehicles WHERE id = ?1 ORDER BY id DESC LIMIT 1 ", nativeQuery = true)
-    public List<Vehicles> getVehicleById(String lead_car_id);
+    public List<Vehicles> getVehicleById(String vehicle_id);
 }

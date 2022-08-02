@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sgasecurity.citmanagerweb2.*;
 import com.sgasecurity.citmanagerweb2.customermanagement.*;
+import com.sgasecurity.citmanagerweb2.planningtripentriesevents.PlanningTripEntriesEvents;
+import com.sgasecurity.citmanagerweb2.planningtripentriesevents.PlanningTripEntriesEventsRepository;
 import com.sgasecurity.citmanagerweb2.resources.LocationTags;
 import com.sgasecurity.citmanagerweb2.resources.LocationTagsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +41,16 @@ public class OperationsController {
     @Autowired
     SystemOtpRepo systemOtpRepo;
 
-
     @Autowired
     PlanningTropEntriesDocumentsRepo planningTropEntriesDocumentsRepo;
 
 
     @Autowired
     CustomerBranchRepo customerBranchRepo;
+
+
+    @Autowired
+    PlanningTripEntriesEventsRepository planningTripEntriesEventsRepository;
 
 
     @Autowired
@@ -73,13 +78,14 @@ public class OperationsController {
 
 
             // Default ASC
+
             List<PlanningAndOperations> planningList = planningAndOperationsRepo.getOperationsASC(user_id, status_filter, num_of_recs);
 
             if (ordering.equals("DESC")) {
                 planningList = planningAndOperationsRepo.getOperationsASC(user_id, status_filter, num_of_recs);
             }
 
-            if (planningList.isEmpty() || planningList == null) {
+            if (planningList.isEmpty()) {
 
                 return "{\"ERROR\":\"No record found\"}";
             } else {
@@ -188,6 +194,11 @@ public class OperationsController {
                 non_confirm++;
                 non_confirm_message = non_confirm_message + "Support staff were not confirmed\\n";
 
+            }
+
+            if (police_officers_confirmation.contains("NO")) {
+                non_confirm++;
+                non_confirm_message = non_confirm_message + "Police officers were not confirmed\\n";
             }
 
             if (seals_confirmaton.contains("NO")) {
@@ -798,26 +809,32 @@ public class OperationsController {
                                       @RequestParam("user_id") String user_id) {
         try {
             // 1. Get all customer requests in the journey
-            List<PlanningTripEntries> Pentries = planningTripEntriesRepo.getPlanningTripByEntrriesByPlanningIDASC(plan_id);
-            System.out.println("Planning trip entries found: " + Pentries.size());
-            List<HashMap<String, String>> myoutput = new ArrayList<>();
+//            List<PlanningTripEntries> Pentries = planningTripEntriesRepo.getPlanningTripByEntrriesByPlanningIDASC(plan_id);
+//            System.out.println("Planning trip entries found: " + Pentries.size());
+//            List<HashMap<String, String>> myoutput = new ArrayList<>();
+//
+//            int event_no = 1;
+//            for (PlanningTripEntries pe : Pentries) {
+//                HashMap<String, String> output = new HashMap<>();
+//                output.put("EVENT NO.", Integer.toString(event_no));
+//                output.put("CUSTOMER", pe.getCustomer_name());
+//                output.put("EVENT", pe.getAction());
+//                output.put("STATUS", pe.getStatus());
+//                myoutput.add(output);
+//            }
 
-            int event_no = 1;
-            for (PlanningTripEntries pe : Pentries) {
-                HashMap<String, String> output = new HashMap<>();
-                output.put("EVENT NO.", Integer.toString(event_no));
-                output.put("CUSTOMER", pe.getCustomer_name());
-                output.put("EVENT", pe.getAction());
-                output.put("STATUS", pe.getStatus());
-                myoutput.add(output);
+            List<PlanningTripEntriesEvents> planningTripEntriesEventsList = planningTripEntriesEventsRepository.getByPlanning_id(plan_id);
+
+            if (planningTripEntriesEventsList.size() > 1) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+                String jsonStr = mapper.writeValueAsString(planningTripEntriesEventsList);
+                return jsonStr;
             }
 
+            return "[{\"error\":\"No events have been recorded for this operation\"}]";
 
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-            String jsonStr = mapper.writeValueAsString(myoutput);
-            return jsonStr;
         } catch (Exception ex) {
             fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewJourneyEvents");
             return "{\"error\":\"" + ex.toString() + "  at reviewJourneyEvents \"}";
@@ -875,16 +892,89 @@ public class OperationsController {
 
                 PO.setDecrew_requested("REQUESTED");
 
+                //After successful de-crew
+                //To be moved to a different function
+                SystemUsers systemUser = systemUsersRepo.getSingleSystemUser(user_id);
+                String crew_commander_name = systemUser.getFirstname() + " " + systemUser.getLastname();
+                String crew_commander_mobile = systemUser.getMobile();
+                String crew_commander_email = systemUser.getEmail();
 
-                return "{\"REQUEST_DECREW\":\"SUCCESS\"}";
+                Random rnd = new Random();
+                int otp_code = 10000 + rnd.nextInt(90000);
+                System.out.println("Random no generated: " + otp_code);
+
+                SystemOtp systemOtp = new SystemOtp(Integer.toString(otp_code), "00000", "SMS", crew_commander_mobile, crew_commander_email, "DECREW", "PENDING", Integer.parseInt(user_id));
+
+                systemOtpRepo.save(systemOtp);
+
+                String message = "Attention " + crew_commander_name + ". Operation " + PO.getReference_number() + " has been successfully de-crewed. Your de-crew OTP Code is " + Integer.toString(otp_code) + ". It will expire in 1  minute(s)";
+
+                Communication communication = new Communication();
+                communication.sendSMS(crew_commander_mobile, message);
+                HashMap<String, String> myResponse = new HashMap<>();
+
+                myResponse.put("OTP_STATUS", "SUCCESS");
+                myResponse.put("OTP_GENERATED", Integer.toString(otp_code));
+                myResponse.put("REQUEST_DECREW", "SUCCESS");
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+                return mapper.writeValueAsString(myResponse);
             } else {
-                PO.setDecrew_requested("REQUESTED");
                 return "{\"REQUEST_DECREW\":\"ERROR: PLANNING RECORD NOT FOUND\"}";
 
             }
         } catch (Exception ex) {
-            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at reviewJourneyDocuments");
-            return "{\"error\":\"" + ex.toString() + "  at reviewJourneyDocuments \"}";
+            fileManager.writeToFile("operations_errors.txt", true, ex.toString() + " at requestdecrew");
+            return "{\"error\":\"" + ex.toString() + "  at requestdecrew \"}";
+        }
+    }
+
+
+    @ResponseBody
+    @RequestMapping("/confirmdecrewotp")
+    public String confirmDecrewOTP(@RequestParam("plan_id") int id,
+                                   @RequestParam("user_id") String user_id,
+                                   @RequestParam("otp_reply") String otp_reply
+    ) {
+        try {
+
+            System.out.println("Confirming OTP\n");
+            List<SystemOtp> systemOtpList = systemOtpRepo.searchLastOtpByRecieverUserID(user_id);
+            SystemOtp systemotp_single = systemOtpList.get(0); //.getOtpCode().toString();
+
+            System.out.println(systemotp_single.getOtpCode() + otp_reply);
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            HashMap<String, String> myResponse = new HashMap<>();
+
+
+            if (systemotp_single.getOtpCode().equals(otp_reply) && systemotp_single.getStatus().equals("PENDING")) {
+                systemotp_single.setOtpCodeReply(otp_reply);
+                systemotp_single.setStatus("SUCCESS");
+                systemOtpRepo.save(systemotp_single);
+
+                myResponse.put("OTP_CONFIRM_STATUS", "SUCCESS");
+
+                planningAndOperationsRepo.findById(id).ifPresent(operation -> {
+                    operation.setPlan_operation_status("COMPLETE");
+                    planningAndOperationsRepo.save(operation);
+                    myResponse.put("PLAN_STATUS", "COMPLETE");
+
+                });
+
+            } else {
+                myResponse.put("OTP_CONFIRM_STATUS", "ERROR");
+            }
+
+            String jsonStr = mapper.writeValueAsString(myResponse);
+            System.out.println("REPLY: " + jsonStr);
+            return jsonStr;  // jsonStr;
+
+        } catch (Exception ex) {
+            return "{\"error\":\"" + ex.toString() + " at ConfirmDecrewOTP\"}";
         }
     }
 
